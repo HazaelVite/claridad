@@ -1,32 +1,73 @@
-# React + TypeScript + Vite
+# Claridad — Herramienta de cifrado
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+Aplicación web para cifrar y descifrar datos (JSON o texto) mediante **AES**, construida con React + TypeScript + Vite y estilizada con **Tailwind CSS v4**.
 
-Currently, two official plugins are available:
+## Características
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **Cifrado / descifrado AES** con [CryptoJS](https://www.npmjs.com/package/crypto-js).
+- **Llave de cifrado** con las siguientes prioridades:
+  1. Valor guardado en `localStorage` (clave `llave`, almacenada en base64).
+  2. Constante `KEY_CRYPTO` en `src/crypto.ts` (vacío por defecto → usa el valor por defecto del backend).
+- Campo de llave oculta/mostrable (ojo), con botones **Guardar** y **Limpiar**.
+- Selección de operación: `cifrado` o `descifrado`.
+- Entrada flexible: si el texto es JSON válido se cifra tal cual; si no, se envuelve como `{ "data": "<texto>" }`.
+- Resultado formateado en el descifrado y botón **Copiar** al portapapeles.
+- Mensajes de validación en español (llave requerida, operación requerida, datos inválidos, fallo de descifrado).
 
-## React Compiler
+## Estructura
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+```
+src/
+├── App.tsx          # Punto de entrada de la UI (renderiza CryptoTool)
+├── CryptoTool.tsx   # Componente con el formulario (llave, operación, datos, resultado)
+├── crypto.ts        # Funciones encrypt / deCrypt / encryptData / deCryptData (AES)
+├── index.css        # Importación de Tailwind CSS v4
+└── main.tsx         # Bootstrap de React
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+## Requisitos
+
+- [Node.js](https://nodejs.org/) ≥ 20
+- [pnpm](https://pnpm.io/) (se incluye `pnpm-lock.yaml`; también funciona con `npm`)
+
+## Instalación y ejecución
+
+```bash
+# Instalar dependencias
+pnpm install
+
+# Servidor de desarrollo (con HMR)
+pnpm dev
+
+# Verificación de tipos + build de producción
+pnpm build
+
+# Vista previa del build
+pnpm preview
+
+# Lint (Oxlint)
+pnpm lint
+```
+
+## Uso
+
+1. Escribe una **llave** y presiona **Guardar** (queda en `localStorage` en base64).
+2. Selecciona la **operación**: `cifrado` o `descifrado`.
+3. Pega los **datos**: JSON para cifrar, o el texto cifrado para descifrar.
+4. Presiona **Procesar**.
+5. Copia el **resultado** con el botón correspondiente.
+
+> **Nota de seguridad:** la llave se guarda en `localStorage` en base64, lo cual es decodificación, no cifrado. Esta herramienta está pensada para uso local/desarrollo; no alojes llaves sensibles en un navegador compartido.
+
+## Backend / transacciones
+
+`src/crypto.ts` incluye utilidades pensadas para envolver transacciones hacia el backend en un sobre cifrado (`transactionData`). La llave del servidor (`CRYPTO_KEY`) **nunca** debe exponerse en el bundle del navegador (no usar prefijos como `NEXT_PUBLIC_`).
+
+## Stack
+
+- [React 19](https://react.dev/)
+- [TypeScript](https://www.typescriptlang.org/)
+- [Vite 8](https://vite.dev/)
+- [Tailwind CSS 4](https://tailwindcss.com/) (plugin `@tailwindcss/vite`)
+- [CryptoJS](https://www.npmjs.com/package/crypto-js)
+- [Oxlint](https://oxc.rs/) como linter
